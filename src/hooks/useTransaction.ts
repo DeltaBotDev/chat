@@ -5,7 +5,7 @@ import {
 } from "@near-wallet-selector/core";
 import { Account } from "near-api-js";
 import { EthTransactionParams, SignRequestData } from "near-safe";
-import { EVMWalletAdapter } from "../types";
+import { EVMWalletAdapter, SolanaWalletAdapter } from "../types";
 
 export interface SuccessInfo {
   near: {
@@ -13,29 +13,39 @@ export interface SuccessInfo {
     transactions: Transaction[];
     encodedTxn?: string;
   };
+  solana?: {
+    signatures: string[];
+    transactions: any[];
+  };
 }
 
 interface UseTransactionProps {
   account?: Account;
   wallet?: Wallet;
   evmWallet?: EVMWalletAdapter;
+  solanaWallet?: SolanaWalletAdapter;
 }
 
 interface HandleTxnOptions {
   transactions?: Transaction[];
   evmData?: SignRequestData;
+  solanaTransactions?: any[];
+  solanaConnection?: any;
 }
 
 export const useTransaction = ({
   account,
   wallet,
   evmWallet,
+  solanaWallet,
 }: UseTransactionProps) => {
   const handleTxn = async ({
     transactions,
     evmData,
+    solanaTransactions,
+    solanaConnection,
   }: HandleTxnOptions): Promise<SuccessInfo> => {
-    const hasNoWalletOrAccount = !wallet && !account && !evmWallet?.address;
+    const hasNoWalletOrAccount = !wallet && !account && !evmWallet?.address && !solanaWallet?.publicKey;
     if (hasNoWalletOrAccount) {
       throw new Error("No wallet or account provided");
     }
@@ -51,11 +61,17 @@ export const useTransaction = ({
       await executeWithEvmWallet(evmData, evmWallet);
     }
 
+    let solanaResult;
+    if (solanaTransactions && solanaWallet && solanaConnection) {
+      solanaResult = await executeWithSolanaWallet(solanaTransactions, solanaWallet, solanaConnection);
+    }
+
     return {
       near: {
         receipts: Array.isArray(nearResult) ? nearResult : [],
         transactions: transactions || [],
       },
+      ...(solanaResult && { solana: solanaResult }),
     };
   };
 
@@ -138,4 +154,60 @@ export const executeWithEvmWallet = async (
   });
 
   await Promise.all(txPromises);
+};
+
+export const executeWithSolanaWallet = async (
+  transactions: any[],
+  solanaWallet: SolanaWalletAdapter,
+  connection: any
+): Promise<{ signatures: string[]; transactions: any[] }> => {
+  // 检查钱包是否连接
+  if (solanaWallet.connected === false) {
+    throw new Error("Solana wallet not connected");
+  }
+  
+  // 检查是否有交易
+  if (!transactions || transactions.length === 0) {
+    throw new Error("No transactions to execute");
+  }
+
+  try {
+    // 处理多个交易
+    if (transactions.length > 1) {
+      const signedTransactions = await solanaWallet.signAllTransactions(transactions);
+      
+      const signatures = [];
+      for (const signedTx of signedTransactions) {
+        const result = await solanaWallet.sendTransaction(signedTx, connection, {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed',
+        });
+        signatures.push(result.signature);
+      }
+      
+      return {
+        signatures,
+        transactions,
+      };
+    } else if (transactions.length === 1) {
+      // 处理单个交易
+      const result = await solanaWallet.sendTransaction(transactions[0], connection, {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+      });
+      
+      return {
+        signatures: [result.signature],
+        transactions,
+      };
+    }
+    
+    return {
+      signatures: [],
+      transactions: [],
+    };
+  } catch (error) {
+    console.error("Error executing Solana transaction:", error);
+    throw error;
+  }
 };

@@ -40,7 +40,7 @@ export const executeLocalToolCall = async ({
   try {
     const args = toolCall.args ? JSON.parse(JSON.stringify(toolCall.args)) : {};
     const { url, remainingArgs } = buildUrlWithParams(baseUrl, toolPath, args);
-    
+
     const { options } = buildRequestOptions({
       httpMethod,
       remainingArgs,
@@ -129,6 +129,8 @@ export const buildRequestOptions = ({
     "Content-Type": "application/json",
     ...(metadata ? { "mb-metadata": JSON.stringify(metadata) } : {}),
   };
+
+  console.log("headers", headers);
 
   const fetchOptions: RequestInit = {
     method: httpMethod,

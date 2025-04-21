@@ -49,7 +49,7 @@ const ChartContainer = React.forwardRef<
         data-chart={chartId}
         ref={ref}
         className={cn(
-          "bitte-flex bitte-aspect-video bitte-justify-center bitte-text-xs [&_.recharts-cartesian-axis-tick_text]:bitte-fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke=#ccc]]:bitte-stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:bitte-stroke-border [&_.recharts-dot[stroke=#fff]]:bitte-stroke-transparent [&_.recharts-layer]:bitte-outline-none [&_.recharts-polar-grid_[stroke=#ccc]]:bitte-stroke-border [&_.recharts-radial-bar-background-sector]:bitte-fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:bitte-fill-muted [&_.recharts-reference-line_[stroke=#ccc]]:bitte-stroke-border [&_.recharts-sector[stroke=#fff]]:bitte-stroke-transparent [&_.recharts-sector]:bitte-outline-none [&_.recharts-surface]:bitte-outline-none",
+         
           className
         )}
         {...props}

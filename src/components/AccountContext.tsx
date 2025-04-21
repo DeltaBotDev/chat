@@ -7,7 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { EVMWalletAdapter, WalletOptions } from "../types";
+import { EVMWalletAdapter, SolanaWalletAdapter, WalletOptions } from "../types";
 
 interface AccountContextType {
   wallet?: Wallet;
@@ -16,6 +16,8 @@ interface AccountContextType {
   evmWallet?: EVMWalletAdapter;
   evmAddress?: string;
   chainId?: number;
+  solanaWallet?: SolanaWalletAdapter;
+  solanaAddress?: string;
 }
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
@@ -27,7 +29,7 @@ interface AccountProviderProps {
 
 export function AccountProvider({
   children,
-  wallet: { near, evm } = {},
+  wallet: { near, evm, solana } = {},
 }: AccountProviderProps) {
   const [accountId, setAccountId] = useState<string | null>(null);
 
@@ -44,12 +46,12 @@ export function AccountProvider({
   }, [near, accountId]);
 
   useEffect(() => {
-    if (!near?.account && !near?.wallet && !evm) {
+    if (!near?.account && !near?.wallet && !evm && !solana) {
       console.warn(
         "No wallet or account configured - users will not be able to send transactions"
       );
     }
-  }, [near, evm]);
+  }, [near, evm, solana]);
 
   return (
     <AccountContext.Provider
@@ -60,6 +62,8 @@ export function AccountProvider({
         evmWallet: evm,
         evmAddress: evm?.address,
         chainId: evm?.chainId,
+        solanaWallet: solana,
+        solanaAddress: solana?.publicKey?.toString(),
       }}
     >
       {children}
@@ -70,7 +74,7 @@ export function AccountProvider({
 export function useAccount() {
   const context = useContext(AccountContext);
   if (context === undefined) {
-    throw new Error("useAccount must be used within an AccountProvider");
+    throw new Error("useAccount must be used within a AccountProvider");
   }
   return context;
 }

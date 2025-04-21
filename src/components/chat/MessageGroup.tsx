@@ -25,6 +25,7 @@ import { SAMessage } from "./Message";
 import { EvmTxCard } from "./transactions/EvmTxCard";
 import { ReviewSignMessage } from "./transactions/ReviewSignMessage";
 import { ReviewTransaction } from "./transactions/ReviewTransaction";
+import { SolTxCard } from "./transactions/SolTxCard";
 
 interface MessageGroupProps {
   chatId: string | undefined;
@@ -142,10 +143,12 @@ export const MessageGroup = ({
         if (
           toolName === BittePrimitiveName.GENERATE_TRANSACTION ||
           toolName === BittePrimitiveName.TRANSFER_FT ||
-          toolName === BittePrimitiveName.GENERATE_EVM_TX
+          toolName === BittePrimitiveName.GENERATE_EVM_TX ||
+          toolName === BittePrimitiveName.GENERATE_SOLANA_TX
         ) {
           const transactions = result?.data?.transactions || [];
           const evmSignRequest = result?.data?.evmSignRequest;
+          const solanaTransactions = result?.data?.solanaTransactions || [];
 
           return (
             <ErrorBoundary key={`${groupKey}-${message.id}`}>
@@ -159,6 +162,16 @@ export const MessageGroup = ({
                     customApproveTxButton={customApproveTxButton}
                     customDeclineTxButton={customDeclineTxButton}
                     customTxContainer={customTxContainer}
+                  />
+                </div>
+              ) : solanaTransactions.length > 0 ? (
+                <div className='bitte-my-4'>
+                  <SolTxCard
+                    solanaTransactions={solanaTransactions}
+                    borderColor={borderColor}
+                    messageBackgroundColor={messageBackgroundColor}
+                    textColor={textColor}
+                    buttonColor={textColor}
                   />
                 </div>
               ) : (

@@ -1,13 +1,14 @@
 {
-  "name": "@bitte-ai/chat",
-  "version": "0.0.3",
-  "description": "Bitte AI chat component",
+  "name": "@delta-trade/chat",
+  "version": "0.0.2",
+  "description": "Delta Trade AI chat component",
   "files": [
     "dist"
   ],
   "main": "dist/index.js",
   "module": "dist/index.mjs.js",
   "scripts": {
+    "dev": "tsup --watch --config tsup.config.ts",
     "build": "tsup --config tsup.config.ts",
     "lint": "eslint src --ext .ts,tsx,js,jsx",
     "lint:types": "tsc --noEmit",
@@ -28,11 +29,11 @@
     "type": "git",
     "url": "git+https://github.com/BitteProtocol/chat.git"
   },
-  "author": "Bitte Team",
   "license": "MIT",
   "keywords": [
-    "bitte",
+    "delta-trade",
     "near",
+    "solana",
     "ai",
     "agents"
   ],
@@ -50,7 +51,11 @@
   },
   "peerDependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@solana/web3.js": "^1.89.1",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@near-wallet-selector/core": "^8.9.14",
+    "near-api-js": "4.0.3"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.0.2",
@@ -58,7 +63,6 @@
     "@ai-sdk/xai": "^1.0.4",
     "@mintbase-js/data": "^0.6.5",
     "@mintbase-js/rpc": "^0.6.5",
-    "@near-wallet-selector/core": "^8.9.14",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-slot": "^1.1.1",
@@ -69,7 +73,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.462.0",
-    "near-api-js": "4.0.3",
     "near-safe": "0.9.8",
     "openai": "^4.73.1",
     "openapi-types": "^12.1.3",

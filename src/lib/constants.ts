@@ -36,4 +36,5 @@ export enum BittePrimitiveName {
   GENERATE_EVM_TX = "generate-evm-tx",
   RENDER_CHART = "render-chart",
   SIGN_MESSAGE = "sign-message",
+  GENERATE_SOLANA_TX = "generate-solana-tx",
 }

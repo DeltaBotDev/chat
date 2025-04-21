@@ -11,7 +11,7 @@ import { AssistantTool, FunctionTool } from "openai/resources/beta/assistants";
 import { FunctionDefinition } from "openai/resources/index";
 import { OpenAPIV3 } from "openapi-types";
 
-import BN from  "bn.js/lib/bn.js";
+import BN from "bn.js/lib/bn.js";
 import { Account } from "near-api-js/lib/account";
 import { SignRequestData } from "near-safe";
 import { Hex } from "viem";
@@ -252,6 +252,12 @@ export interface BitteAiChatProps {
  * - address: From useAccount() hook
  * - sendTransaction: From useSendTransaction() hook
  * - hash: Transaction hash returned after sending
+ *
+ * For Solana:
+ * - publicKey: User's Solana public key
+ * - signTransaction: Method to sign transactions
+ * - signAllTransactions: Method to sign multiple transactions
+ * - sendTransaction: Method to send transactions
  */
 export type WalletOptions = {
   near?: {
@@ -259,6 +265,7 @@ export type WalletOptions = {
     account?: Account; // From near-api-js
   };
   evm?: EVMWalletAdapter; // Interface matching wagmi hook outputs
+  solana?: SolanaWalletAdapter; // Interface for Solana wallet
 };
 
 export type SelectedAgent = {
@@ -288,6 +295,7 @@ export interface ChatRequestBody {
   network?: string;
   evmAddress?: Hex;
   chainId?: number;
+  solanaAddress?: string;
   localAgent?: {
     pluginId: string;
     accountId: string;
@@ -309,6 +317,19 @@ export interface EVMWalletAdapter {
   address: string | undefined;
   chainId?: number;
   hash?: string;
+}
+
+export interface SolanaWalletAdapter {
+  publicKey?: { toString: () => string } | string;
+  signTransaction: <T extends any>(transaction: T) => Promise<T>;
+  signAllTransactions: <T extends any>(transactions: T[]) => Promise<T[]>;
+  sendTransaction: <T extends any>(
+    transaction: T,
+    connection: any,
+    options?: any
+  ) => Promise<{ signature: string }>;
+  connected?: boolean;
+  connection?: any;
 }
 
 export type GenerateImageResponse = {

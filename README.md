@@ -1,4 +1,3 @@
-
 # Bitte AI Chat
 
 <p align="center">
@@ -126,7 +125,6 @@ import { Account } from "near-api-js";
 EVM integration uses WalletConnect with wagmi hooks:
 
 ```typescript
-
 import { useSendTransaction, useAccount } from 'wagmi';
 
 export default function Chat() {
@@ -141,6 +139,37 @@ export default function Chat() {
         evm: {
           sendTransaction,
           address
+        }
+      }}
+    />
+  );
+}
+```
+
+### Solana Integration
+
+Solana integration requires a wallet adapter from the Solana wallet adapter library:
+
+```typescript
+import { useWallet } from '@solana/wallet-adapter-react';
+import { Connection } from '@solana/web3.js';
+
+export default function Chat() {
+  const { publicKey, signTransaction, signAllTransactions, sendTransaction, connected } = useWallet();
+  const connection = new Connection('https://api.mainnet-beta.solana.com');
+  
+  return (
+    <BitteAiChat
+      agentId="your-agent-id"
+      apiUrl="/api/chat"
+      wallet={{
+        solana: {
+          publicKey: publicKey?.toString(),
+          signTransaction,
+          signAllTransactions,
+          sendTransaction,
+          connected,
+          cluster: 'mainnet-beta' 
         }
       }}
     />

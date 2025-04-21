@@ -40,7 +40,16 @@ export const ChatContent = ({
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const messagesRef = useRef<HTMLDivElement | null>(null);
 
-  const { accountId, evmAddress, chainId } = useAccount();
+  const { accountId, evmAddress, chainId, solanaAddress } = useAccount();
+
+  const displayAccountId = useMemo(
+    () =>
+      accountId ||
+      (solanaAddress
+        ? shortenAddress(solanaAddress)
+        : shortenAddress(evmAddress)),
+    [accountId, solanaAddress, evmAddress]
+  );
 
   const {
     borderColor,
@@ -86,6 +95,7 @@ export const ChatContent = ({
             accountId,
             evmAddress,
             chainId,
+            solanaAddress,
           },
         });
       } catch (error) {
@@ -109,9 +119,12 @@ export const ChatContent = ({
         mode: AssistantsMode.DEBUG,
         agentId,
       },
-      accountId: accountId || "",
+      accountId: solanaAddress
+        ? `solana@${solanaAddress}`
+        : accountId!,
       evmAddress: evmAddress as Hex,
       chainId,
+      solanaAddress,
       localAgent: options?.localAgent,
     } satisfies ChatRequestBody,
   });
@@ -252,12 +265,13 @@ export const ChatContent = ({
             >
               {groupedMessages?.map((messages: Message[]) => {
                 const groupKey = `group-${messages?.[0]?.id}`;
+
                 return (
                   <MessageGroup
                     chatId={chatId}
                     key={groupKey}
                     groupKey={groupKey}
-                    accountId={accountId || shortenAddress(evmAddress)}
+                    accountId={displayAccountId}
                     messages={messages}
                     isLoading={isInProgress}
                     messageBackgroundColor={messageBackground}
@@ -275,7 +289,7 @@ export const ChatContent = ({
 
               {error && (
                 <div className='bitte-flex bitte-flex-col bitte-items-center bitte-justify-center bitte-space-y-2 bitte-px-6 bitte-pb-6 bitte-text-center bitte-text-sm'>
-                  {!accountId && !evmAddress ? (
+                  {!accountId && !evmAddress && !solanaAddress ? (
                     <p>
                       An error occurred. <br />
                       Please connect your wallet and try again.
