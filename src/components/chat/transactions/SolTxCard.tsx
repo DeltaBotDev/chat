@@ -16,13 +16,19 @@ import { Button } from "../../ui/button";
 import { useAccount } from "../../AccountContext";
 import { TransactionResult } from "./TransactionResult";
 import LoadingMessage from "../LoadingMessage";
-
+import { TransactionButtonProps, TransactionContainerProps } from "../../../types";
+import DefaultTxContainer from "../default-components/DefaultTxContainer";
+import DefaultTxApproveButton from "../default-components/DefaultTxApproveButton";
+import DefaultTxDeclineButton from "../default-components/DefaultTxDeclineButton";
+import { useTransaction } from "../../../hooks/useTransaction";
 interface SolTxCardProps {
-  solanaTransactions: any[];
+  solanaTransactions: string | string[];
   messageBackgroundColor: string;
   borderColor: string;
   textColor: string;
-  buttonColor?: string;
+  customTxContainer?: React.ComponentType<TransactionContainerProps>;
+  customApproveTxButton?: React.ComponentType<TransactionButtonProps>;
+  customDeclineTxButton?: React.ComponentType<TransactionButtonProps>;
 }
 
 export const SolTxCard = ({
@@ -30,17 +36,18 @@ export const SolTxCard = ({
   messageBackgroundColor,
   borderColor,
   textColor,
-  buttonColor,
+  customTxContainer: TxContainer = DefaultTxContainer,
+  customApproveTxButton: ApproveButton = DefaultTxApproveButton,
+  customDeclineTxButton: DeclineButton = DefaultTxDeclineButton,
 }: SolTxCardProps) => {
   const { solanaWallet, solanaAddress } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [txResult, setTxResult] = useState<{ signatures: string[] } | null>(
-    null
-  );
+  const [txResult, setTxResult] = useState<{ signatures: string[] } | null>(null);
   const [walletConnected, setWalletConnected] = useState(false);
 
-  // 监控钱包连接状态
+  const [transactions, setTransactions] = useState<string[]>([]);
+
   useEffect(() => {
     if (solanaWallet && solanaAddress) {
       setWalletConnected(true);
@@ -51,56 +58,68 @@ export const SolTxCard = ({
     }
   }, [solanaWallet, solanaAddress]);
 
-  const handleSmartAction = async () => {
-    if (!solanaWallet || !solanaAddress) {
-      setErrorMsg("No Solana wallet connected");
-      return;
-    }
-
-    setIsLoading(true);
-    setErrorMsg("");
+  useEffect(() => {
     try {
-      // 处理多个交易
-      if (solanaTransactions.length > 1) {
-        const signedTransactions =
-          await solanaWallet.signAllTransactions(solanaTransactions);
+      const txArray = Array.isArray(solanaTransactions) 
+        ? solanaTransactions 
+        : [solanaTransactions];
+      
+      setTransactions(txArray);
+      console.log(`Processing ${txArray.length} Solana transaction(s)`);
+    } catch (error) {
+      console.error("Error processing transactions:", error);
+      setErrorMsg("Error processing transaction data");
+    }
+  }, [solanaTransactions]);
 
-        const signatures = [];
-        for (const signedTx of signedTransactions) {
-          const result = await solanaWallet.sendTransaction(
-            signedTx,
-            solanaWallet.connection,
-            {
-              skipPreflight: false,
-              preflightCommitment: "confirmed",
-            }
-          );
-          signatures.push(result.signature);
-        }
+  const {handleTxn}=useTransaction({solanaWallet})
 
-        setTxResult({
-          signatures,
-        });
-      } else if (solanaTransactions.length === 1) {
-        // 处理单个交易
-        const result = await solanaWallet.sendTransaction(
-          solanaTransactions[0],
-          solanaWallet.connection,
-          {
-            skipPreflight: false,
-            preflightCommitment: "confirmed",
-          }
-        );
-
-        setTxResult({
-          signatures: [result.signature],
-        });
-      }
-    } catch (error: any) {
-      console.error("Error executing Solana transaction:", error);
-      setErrorMsg(error.message || "Failed to execute transaction");
-    } finally {
+  const handleSmartAction = async () => {
+    setIsLoading(true);
+    try {
+      await handleTxn({ solanaTransactions, });
+    } catch (error) {
       setIsLoading(false);
+      setErrorMsg(
+        error instanceof Error
+          ? error.message
+          : `Unknown error: ${JSON.stringify(error)}`
+      );
+    }
+  };
+
+  const handleDecline = () => {
+    
+  };
+
+  const formatTransaction = (tx: string, index: number) => {
+    try {
+      return (
+        <AccordionItem key={index} value={`tx-${index}`}>
+          <AccordionTrigger>
+            Transaction {index + 1}
+          </AccordionTrigger>
+          <AccordionContent>
+            <pre className='bitte-text-xs bitte-overflow-auto bitte-max-h-80'>
+              [Base64 Transaction] {tx.substring(0, 50)}...
+            </pre>
+          </AccordionContent>
+        </AccordionItem>
+      );
+    } catch (error) {
+      console.error("Error formatting transaction:", error);
+      return (
+        <AccordionItem key={index} value={`tx-${index}`}>
+          <AccordionTrigger>
+            Transaction {index + 1} (Error)
+          </AccordionTrigger>
+          <AccordionContent>
+            <pre className='bitte-text-xs bitte-overflow-auto bitte-max-h-80 bitte-text-red-300'>
+              Error formatting transaction
+            </pre>
+          </AccordionContent>
+        </AccordionItem>
+      );
     }
   };
 
@@ -110,11 +129,11 @@ export const SolTxCard = ({
         className='bitte-w-full bitte-flex bitte-flex-col bitte-gap-4'
         style={{ color: textColor }}
       >
-        <Card
-          className='bitte-w-full'
+        <TxContainer
           style={{
             backgroundColor: messageBackgroundColor,
-            borderColor,
+            borderColor: borderColor,
+            textColor: textColor,
           }}
         >
           <CardHeader>
@@ -129,7 +148,7 @@ export const SolTxCard = ({
             <div className='bitte-flex bitte-flex-col bitte-gap-4'>
               <div className='bitte-text-sm'>
                 <p>
-                  Found {solanaTransactions.length} transaction(s) to execute on
+                  Found {transactions.length} transaction(s) to execute on
                   Solana
                 </p>
                 <p className='bitte-mt-2'>
@@ -138,20 +157,9 @@ export const SolTxCard = ({
                 </p>
               </div>
 
-              {solanaTransactions.length > 0 && (
+              {transactions.length > 0 && (
                 <Accordion type='single' collapsible className='bitte-w-full'>
-                  {solanaTransactions.map((tx, index) => (
-                    <AccordionItem key={index} value={`tx-${index}`}>
-                      <AccordionTrigger>
-                        Transaction {index + 1}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <pre className='bitte-text-xs bitte-overflow-auto bitte-max-h-80'>
-                          {JSON.stringify(tx, null, 2)}
-                        </pre>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
+                  {transactions.map((tx, index) => formatTransaction(tx, index))}
                 </Accordion>
               )}
             </div>
@@ -186,26 +194,22 @@ export const SolTxCard = ({
           {!isLoading && !errorMsg && !txResult ? (
             <CardFooter className='bitte-flex bitte-items-center bitte-gap-6'>
               <>
-                <Button variant='outline' className='bitte-w-1/2'>
-                  Decline
-                </Button>
+                <DeclineButton
+                  onClick={handleDecline}
+                  disabled={isLoading}
+                  label="Decline"
+                />
 
-                <Button
-                  className='bitte-w-1/2'
+                <ApproveButton
                   onClick={handleSmartAction}
                   disabled={isLoading || !walletConnected}
-                  style={{ backgroundColor: buttonColor }}
-                >
-                  {isLoading
-                    ? "Confirming..."
-                    : walletConnected
-                      ? "Approve"
-                      : "Connect Wallet First"}
-                </Button>
+                  isLoading={isLoading}
+                  label={walletConnected ? "Approve" : "Connect Wallet First"}
+                />
               </>
             </CardFooter>
           ) : null}
-        </Card>
+        </TxContainer>
       </div>
     </>
   );

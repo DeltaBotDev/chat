@@ -21,6 +21,7 @@ import type {
 } from "wagmi";
 import { BittePrimitiveName } from "../lib/constants";
 import { TransactionOperation } from "./transaction";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 export type BitteMetadata = {
   [key: string]: unknown;
@@ -320,16 +321,16 @@ export interface EVMWalletAdapter {
 }
 
 export interface SolanaWalletAdapter {
-  publicKey?: { toString: () => string } | string;
+  publicKey?: PublicKey;
   signTransaction: <T extends any>(transaction: T) => Promise<T>;
   signAllTransactions: <T extends any>(transactions: T[]) => Promise<T[]>;
   sendTransaction: <T extends any>(
     transaction: T,
-    connection: any,
+    connection: Connection,
     options?: any
-  ) => Promise<{ signature: string }>;
+  ) => Promise<string>;
   connected?: boolean;
-  connection?: any;
+  connection?: Connection;
 }
 
 export type GenerateImageResponse = {

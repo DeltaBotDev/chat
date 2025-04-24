@@ -106,6 +106,7 @@ export const MessageGroup = ({
     if (message.toolInvocations) {
       for (const invocation of message.toolInvocations) {
         const { toolName, toolCallId, state, args } = invocation;
+      
         const result = state === "result" ? invocation.result : null;
 
         if (state !== "result") {
@@ -139,7 +140,7 @@ export const MessageGroup = ({
 
           return null;
         }
-
+       
         if (
           toolName === BittePrimitiveName.GENERATE_TRANSACTION ||
           toolName === BittePrimitiveName.TRANSFER_FT ||
@@ -148,7 +149,7 @@ export const MessageGroup = ({
         ) {
           const transactions = result?.data?.transactions || [];
           const evmSignRequest = result?.data?.evmSignRequest;
-          const solanaTransactions = result?.data?.solanaTransactions || [];
+          const solanaTransactions = result?.data?.result?.solanaTransactions || [];
 
           return (
             <ErrorBoundary key={`${groupKey}-${message.id}`}>
@@ -171,7 +172,9 @@ export const MessageGroup = ({
                     borderColor={borderColor}
                     messageBackgroundColor={messageBackgroundColor}
                     textColor={textColor}
-                    buttonColor={textColor}
+                    customApproveTxButton={customApproveTxButton}
+                    customDeclineTxButton={customDeclineTxButton}
+                    customTxContainer={customTxContainer}
                   />
                 </div>
               ) : (

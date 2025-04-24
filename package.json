@@ -1,6 +1,6 @@
 {
   "name": "@delta-trade/chat",
-  "version": "0.0.2",
+  "version": "0.0.16",
   "description": "Delta Trade AI chat component",
   "files": [
     "dist"
@@ -14,7 +14,8 @@
     "lint:types": "tsc --noEmit",
     "prettier:write": "prettier --w src",
     "clean": "rm -rf dist",
-    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify"
+    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify",
+    "pub": "npm run build && npm publish"
   },
   "exports": {
     ".": {
@@ -50,12 +51,12 @@
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@solana/web3.js": "^1.89.1",
-    "@solana/wallet-adapter-base": "^0.9.23",
     "@near-wallet-selector/core": "^8.9.14",
-    "near-api-js": "4.0.3"
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/web3.js": "^1.89.1",
+    "near-api-js": "4.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.0.2",
@@ -70,6 +71,7 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "ai": "4.1.2",
     "bn.js": "^5.2.1",
+    "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.462.0",
