@@ -185,35 +185,14 @@ export const executeWithSolanaWallet = async (
   }
 
   try {
-    const deserializedTransaction = deserializeTransaction(transactions);
-
-    const { blockhash, lastValidBlockHeight } =
-      await connection.getLatestBlockhash();
-
-    const transactionArray = Array.isArray(deserializedTransaction)
-      ? deserializedTransaction
-      : [deserializedTransaction];
-    const transaction = new SolanaTransaction().add(...transactionArray);
-    transaction.recentBlockhash = blockhash;
-    transaction.lastValidBlockHeight = lastValidBlockHeight;
-    transaction.feePayer = publicKey;
-    const priorityFee = await getPriorityFeeEstimate(transaction);
-    console.log("estimated priorityFee:", priorityFee);
-    transaction.add(
-      ComputeBudgetProgram.setComputeUnitLimit({
-        units: 500000,
-      }),
-      ComputeBudgetProgram.setComputeUnitPrice({
-        microLamports: priorityFee,
-      })
-    );
+    const deserializedTransaction = deserializeTransaction(transactions,connection);
 
     const sendOptions = {
       skipPreflight: true,
       maxRetries: 10,
       preflightCommitment: "finalized",
     };
-    const signature = await sendTransaction?.(transaction, connection, {
+    const signature = await sendTransaction?.(deserializedTransaction, connection, {
       ...sendOptions,
     });
 
@@ -241,7 +220,7 @@ export const executeWithSolanaWallet = async (
   }
 };
 
-function deserializeTransaction(base64String: string) {
+ async function deserializeTransaction(base64String: string,connection:Connection) {
   try {
     console.log("deserializeTransaction", base64String);
     const buffer = Buffer.from(base64String, "base64");
@@ -249,6 +228,9 @@ function deserializeTransaction(base64String: string) {
 
     const transaction = SolanaTransaction.from(buffer);
     console.log("deserializeTransaction transaction", transaction);
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.lastValidBlockHeight = lastValidBlockHeight;
     return transaction;
     
   } catch (error) {
@@ -257,36 +239,6 @@ function deserializeTransaction(base64String: string) {
   }
 }
 
-async function getPriorityFeeEstimate(transaction: SolanaTransaction) {
-  const defaultPriorityFee = 300000;
-  try {
-    if (process.env.NEXT_PUBLIC_NETWORK !== "mainnet")
-      return defaultPriorityFee;
-
-    const res = await fetch(`https://solana-helius.deltarpc.com/`, {
-      method: "POST",
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: "1",
-        method: "getPriorityFeeEstimate",
-        params: [
-          {
-            transaction: bs58.encode(
-              transaction.serialize({ verifySignatures: false })
-            ),
-            options: { priorityLevel: "High" },
-          },
-        ],
-      }),
-    });
-    const {result}=await res.json();
-    const priorityFee = Number(result?.priorityFeeEstimate || 0)
-    return priorityFee ?? defaultPriorityFee;
-  } catch (error) {
-    console.error(error);
-    return defaultPriorityFee;
-  }
-}
 
 async function pollForTransactionConfirmation(
   connection: Connection,

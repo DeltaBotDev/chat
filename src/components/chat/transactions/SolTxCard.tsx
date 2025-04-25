@@ -77,7 +77,10 @@ export const SolTxCard = ({
   const handleSmartAction = async () => {
     setIsLoading(true);
     try {
-      await handleTxn({ solanaTransactions, });
+      const result = await handleTxn({ solanaTransactions, });
+      if(result.solana?.signatures){
+        setTxResult({signatures:Array.isArray(result.solana.signatures)?result.solana.signatures:[result.solana.signatures]})
+      }
     } catch (error) {
       setIsLoading(false);
       setErrorMsg(
