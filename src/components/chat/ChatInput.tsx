@@ -53,17 +53,17 @@ export const SmartActionsInput = ({
 
   return (
     <form
-      className='bitte-relative bitte-mb-0 bitte-flex bitte-w-full bitte-items-center bitte-justify-center bitte-gap-4 max-lg:bitte-flex-wrap'
+      className='bitte-relative bitte-mb-0 bitte-flex bitte-w-full bitte-items-center bitte-justify-center bitte-gap-4'
       style={{ color: textColor }}
       onSubmit={handleSubmit}
     >
-      <div className='bitte-w-full bitte-relative'>
-        <AgentPill name={agentName || previousAgentName} ref={agentNameRef} />
+      <div className='bitte-w-full bitte-relative bitte-flex-1'>
+        {/* <AgentPill name={agentName || previousAgentName} ref={agentNameRef} /> */}
 
         <Textarea
           placeholder={placeholderText || "Message Smart Actions"}
           style={{
-            paddingLeft: `${paddingLeft}px`,
+            // paddingLeft: `${paddingLeft}px`,
             background: backgroundColor,
             borderColor: borderColor,
           }}
@@ -78,7 +78,7 @@ export const SmartActionsInput = ({
           value={input}
         />
       </div>
-      <div className='bitte-flex bitte-gap-2 bitte-w-full lg:bitte-contents'>
+      <div className='bitte-flex bitte-gap-2'>
         {mobileInputExtraButton ? (
           <div className='bitte-w-full lg:bitte-hidden'>
             {mobileInputExtraButton}

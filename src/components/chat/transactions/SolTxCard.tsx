@@ -82,12 +82,13 @@ export const SolTxCard = ({
         setTxResult({signatures:Array.isArray(result.solana.signatures)?result.solana.signatures:[result.solana.signatures]})
       }
     } catch (error) {
-      setIsLoading(false);
       setErrorMsg(
         error instanceof Error
           ? error.message
           : `Unknown error: ${JSON.stringify(error)}`
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 

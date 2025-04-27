@@ -237,7 +237,7 @@ export const ChatContent = ({
         >
           <div
             className={cn(
-              "bitte-mx-auto bitte-flex bitte-w-full bitte-flex-col md:bitte-mx-24 2xl:bitte-mx-56",
+              "bitte-mx-auto bitte-flex bitte-w-full bitte-flex-col",
               !!agentId
                 ? "bitte-h-[calc(100%-240px)]"
                 : "bitte-h-[calc(100%-208px)]"
@@ -260,7 +260,7 @@ export const ChatContent = ({
               ))}
 
             <div
-              className='bitte-flex bitte-w-full bitte-flex-col bitte-gap-4 bitte-py-6'
+              className='bitte-flex bitte-w-full bitte-flex-col bitte-gap-4 '
               style={{ color: textColor }}
             >
               {groupedMessages?.map((messages: Message[]) => {
